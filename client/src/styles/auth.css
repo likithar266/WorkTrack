@@ -1,0 +1,296 @@
+/* === ROOT VARIABLES (from landing.css) === */
+:root {
+  --primary-color: #1dbf73;
+  --primary-hover: #19a463;
+  --text-dark: #222325;
+  --text-light: #62646a;
+  --border-color: #e4e5e7;
+  --bg-light: #f7f7f7;
+  --bg-white: #ffffff;
+  --font-family: 'Poppins', sans-serif;
+}
+
+/* === Auth Page Container === */
+.auth-page-container {
+  width: 100%;
+  min-height: 90vh; /* Will fill the screen below your header */
+  display: flex;
+  flex-direction: column; /* Changed to column */
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-light);
+  padding: 40px 20px 60px; /* Added padding to top */
+  font-family: var(--font-family);
+}
+
+/* === NEW: Back Link === */
+.auth-back-link-v4 {
+  width: 100%;
+  max-width: 480px; /* Matches the form card width */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: color 0.3s ease;
+}
+.auth-back-link-v4:hover {
+  color: var(--primary-color);
+}
+/* === End of Back Link === */
+
+
+/* === Auth Form Card === */
+.auth-form-v4 {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.auth-title-v4 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle-v4 {
+  font-size: 1rem;
+  color: var(--text-light);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* === Social Buttons === */
+.btn-social-v4 {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 12px;
+}
+.btn-social-v4 svg {
+  font-size: 1.2rem;
+}
+.btn-google-v4 {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+}
+.btn-google-v4:hover {
+  background: var(--bg-light);
+}
+.btn-apple-v4 {
+  background: #000000;
+  border: 1px solid #000000;
+  color: white;
+}
+.btn-apple-v4:hover {
+  background: #333;
+}
+
+/* === Separator === */
+.auth-separator-v4 {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-light);
+  margin: 25px 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.auth-separator-v4::before,
+.auth-separator-v4::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+.auth-separator-v4:not(:empty)::before {
+  margin-right: 0.5em;
+}
+.auth-separator-v4:not(:empty)::after {
+  margin-left: 0.5em;
+}
+
+/* === Form Inputs === */
+.form-group-v4 {
+  margin-bottom: 20px;
+}
+.form-group-v4 label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+.form-control-v4 {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  font-family: var(--font-family);
+  box-sizing: border-box; /* Fixes padding issues */
+}
+.form-control-v4:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(29, 191, 115, 0.1);
+}
+.form-control-v4::placeholder {
+  color: #aaa;
+}
+
+/* === Usertype Radio Buttons === */
+.usertype-select-v4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.usertype-select-v4 label {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--text-light);
+}
+.usertype-select-v4 input[type="radio"] {
+  accent-color: var(--primary-color);
+  width: 1.15em;
+  height: 1.15em;
+}
+.usertype-select-v4 label:has(input:checked) {
+  border-color: var(--primary-color);
+  background-color: #f6fef9;
+  color: var(--text-dark);
+}
+
+/* === reCAPTCHA Box === */
+.recaptcha-v4 {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px;
+  cursor: pointer;
+}
+.recaptcha-checkbox {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #c1c1c1;
+  border-radius: 2px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+.recaptcha-checkbox .checked {
+  color: var(--primary-color);
+  font-size: 1.6rem;
+}
+.recaptcha-checkbox .unchecked {
+  color: #f9f9f9; /* Hides the box interior */
+}
+.recaptcha-v4 span {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+/* === Terms & Conditions Checkbox === */
+.terms-v4 {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 500;
+  color: var(--text-light);
+  margin-top: 10px;
+}
+.terms-v4 input[type="checkbox"] {
+  accent-color: var(--primary-color);
+  width: 1.15em;
+  height: 1.15em;
+  margin-top: 4px; /* Aligns checkbox with text */
+  flex-shrink: 0;
+}
+.terms-v4 span {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.terms-v4 a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+.terms-v4 a:hover {
+  text-decoration: underline;
+}
+
+
+/* === Submit Button === */
+.btn-submit-v4 {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+.btn-submit-v4:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(29, 191, 115, 0.2);
+}
+
+/* === Disabled Button State === */
+.btn-submit-v4:disabled {
+  background-color: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* === Footer Link === */
+.auth-footer-v4 {
+  text-align: center;
+  margin-top: 25px;
+  color: var(--text-light);
+}
+.auth-footer-v4 span {
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+}
+.auth-footer-v4 span:hover {
+  text-decoration: underline;
+}
