@@ -7,7 +7,7 @@ export const GeneralContext = createContext();
 
 const GeneralContextProvider = ({children}) => {
 
-  const WS = 'http://localhost:6001';
+  const WS = process.env.REACT_APP_API_URL || 'http://localhost:6001';
 
   const socket = socketIoClient(WS);
 
