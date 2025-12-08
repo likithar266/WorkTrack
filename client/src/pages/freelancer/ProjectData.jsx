@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {useParams} from 'react-router-dom';
-import axios from 'axios';
+import API from '../../api';
 import '../../styles/freelancer/ProjectData.css'
 import { GeneralContext } from '../../context/GeneralContext';
 
@@ -37,7 +37,7 @@ const ProjectData = () => {
 
 
   const fetchProject = async(id) =>{
-    await axios.get(`http://localhost:6001/fetch-project/${id}`).then(
+    await API.get(`/fetch-project/${id}`).then(
       (response)=>{
         setProject(response.data);
         setProjectId(response.data._id);
@@ -60,7 +60,7 @@ const ProjectData = () => {
 
     const handleBidding = async() =>{
 
-      await axios.post("http://localhost:6001/make-bid", {clientId, freelancerId, projectId, proposal, bidAmount, estimatedTime}).then(
+      await API.post("/make-bid", {clientId, freelancerId, projectId, proposal, bidAmount, estimatedTime}).then(
         (response)=>{
             setProposal('');
             setBidAmount(0);
@@ -81,7 +81,7 @@ const ProjectData = () => {
 
     const handleProjectSubmission = async() =>{
 
-      await axios.post("http://localhost:6001/submit-project", {clientId, freelancerId, projectId, projectLink, manualLink, submissionDescription}).then(
+      await API.post("/submit-project", {clientId, freelancerId, projectId, projectLink, manualLink, submissionDescription}).then(
         (response)=>{
             setProjectLink('');
             setManualLink('');
@@ -111,7 +111,7 @@ const ProjectData = () => {
 
     const [chats, setChats] = useState();
     const fetchChats = async() =>{
-      await axios.get(`http://localhost:6001/fetch-chats/${params['id']}`).then(
+      await API.get(`/fetch-chats/${params['id']}`).then(
         (response) =>{
           setChats(response.data);
         }
