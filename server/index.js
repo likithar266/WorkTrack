@@ -25,14 +25,39 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-// app.use(cors());
+
+// === CORS CONFIGURATION START ===
+// Define the allowed origins. We'll allow the deployed client and localhost for development.
+const allowedOrigins = [
+  'https://freelancer-client.onrender.com', // Your deployed frontend
+  'http://localhost:3000'                   // Your local development environment
+];
+
+// Configure CORS for Express
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+// === CORS CONFIGURATION END ===
+
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }
+  // Configure CORS for Socket.IO
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  }
 });
 io.on("connection", (socket) => {
   console.log("User connected");
