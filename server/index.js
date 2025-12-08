@@ -7,6 +7,11 @@ import { Application, Chat, Freelancer, Project, User } from './Schema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import SocketHandler from './SocketHandler.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const formatUserResponse = (user) => {
   if (!user) return null;
@@ -20,7 +25,10 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
+// app.use(cors());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -31,7 +39,7 @@ io.on("connection", (socket) => {
   SocketHandler(socket);
 });
 
-const PORT = 6001;
+const PORT = process.env.PORT || 6001;
 console.log('SQLite database initialized');
 
 // register
@@ -122,7 +130,7 @@ app.post('/update-freelancer', (req, res) => {
     res.status(200).json(freelancerResponse);
   } catch (err) {
     console.error('Update freelancer error:', err);
-    res.status(500).json({ error: err.message || "Failed to update freelancer" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -379,6 +387,10 @@ app.get('/fetch-chats/:id', (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Running @ ${PORT}`);
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
 });
+
+server.listen(PORT, () => console.log(`Server Port: ${PORT}`));
