@@ -38,7 +38,12 @@ const GeneralContextProvider = ({children}) => {
       }
     } catch (err) {
       setErr(true);
-      setErrMsg(err.response.data.msg);
+      // Check for network vs. server errors
+      if (err.response && err.response.data && err.response.data.msg) {
+        setErrMsg(err.response.data.msg);
+      } else {
+        setErrMsg("Network error or server is not responding.");
+      }
     }
   }
 
@@ -59,7 +64,12 @@ const GeneralContextProvider = ({children}) => {
       }
     } catch (err) {
       setErr(true);
-      setErrMsg(err.response.data.error);
+      // Check for network vs. server errors
+      if (err.response && err.response.data && err.response.data.error) {
+        setErrMsg(err.response.data.error);
+      } else {
+        setErrMsg("Network error or server is not responding.");
+      }
     }
   }
 
