@@ -20,24 +20,6 @@ To run this project in a development environment, follow these steps:
     npm start
     ```
 
-## Deployment
-
-To deploy this project, follow these steps:
-
-1.  **Build the client:**
-    ```bash
-    cd client
-    npm install
-    npm run build
-    ```
-
-2.  **Start the server:**
-    ```bash
-    cd server
-    npm install
-    npm start
-    ```
-
 The server will be running on `http://localhost:6001` (or the port specified by the `PORT` environment variable) and will serve the optimized production build of the client.
 
 
