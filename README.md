@@ -10,7 +10,7 @@ To run this project in a development environment, follow these steps:
     ```bash
     cd server
     npm install
-    node index.js
+    npm start
     ```
 
 2.  **Start the client:**
