@@ -23,6 +23,8 @@ import Invoices from './pages/client/Invoices'
 import Earnings from './pages/freelancer/Earnings'
 import CreateInvoice from './pages/freelancer/CreateInvoice'
 
+import Notifications from './pages/Notifications'
+
 import Admin from './pages/admin/Admin'
 import AdminProjects from './pages/admin/AdminProjects'
 import AllApplications from './pages/admin/AllApplications'
@@ -56,6 +58,8 @@ function App() {
 
         <Route path='/earnings' element={<Earnings />} />
         <Route path='/create-invoice' element={<CreateInvoice />} />
+
+        <Route path='/notifications' element={<Notifications />} />
 
         <Route path='/admin' element={<Admin />} />
         <Route path='/admin-projects' element={<AdminProjects />} />

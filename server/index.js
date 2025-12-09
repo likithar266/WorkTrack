@@ -3,7 +3,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
-import { Application, Chat, Freelancer, Project, User, Payment, Invoice } from './Schema.js';
+import { Application, Chat, Freelancer, Project, User, Payment, Invoice, Notification, updateInvoicePaymentStatus, getProjectView, getProjectViewById } from './Schema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import SocketHandler from './SocketHandler.js';
@@ -605,10 +605,106 @@ app.post('/update-invoice/:id', (req, res) => {
   }
 });
 
+/* -----------------------------
+   Notification endpoints
+   ----------------------------- */
+
+// Get notifications for a user
+app.get('/notifications/:userId', (req, res) => {
+  try {
+    const notifications = Notification.findByUserId(req.params.userId);
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error('Fetch notifications error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Mark notification as read
+app.post('/notifications/read/:id', (req, res) => {
+  try {
+    const notification = Notification.markAsRead(req.params.id);
+    res.status(200).json(notification);
+  } catch (err) {
+    console.error('Mark notification as read error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Mark all notifications as read for user
+app.post('/notifications/read-all/:userId', (req, res) => {
+  try {
+    Notification.markAllAsReadForUser(req.params.userId);
+    res.status(200).json({ message: 'All notifications marked as read' });
+  } catch (err) {
+    console.error('Mark all notifications as read error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete notification
+app.delete('/notifications/:id', (req, res) => {
+  try {
+    Notification.deleteById(req.params.id);
+    res.status(200).json({ message: 'Notification deleted' });
+  } catch (err) {
+    console.error('Delete notification error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* -----------------------------
+   Project View endpoints (using VIEW)
+   ----------------------------- */
+
+// Get all projects with detailed view
+app.get('/projects-view', (req, res) => {
+  try {
+    const projects = getProjectView();
+    res.status(200).json(projects);
+  } catch (err) {
+    console.error('Fetch project view error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single project detailed view
+app.get('/projects-view/:id', (req, res) => {
+  try {
+    const project = getProjectViewById(req.params.id);
+    res.status(200).json(project);
+  } catch (err) {
+    console.error('Fetch project view by id error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
+// Schedule automatic check for overdue invoices (runs every hour)
+setInterval(() => {
+  try {
+    const count = updateInvoicePaymentStatus();
+    if (count > 0) {
+      console.log(`Updated ${count} overdue invoices`);
+    }
+  } catch (err) {
+    console.error('Error updating invoice status:', err);
+  }
+}, 3600000); // 1 hour = 3600000 ms
+
+// Run once on startup
+setTimeout(() => {
+  try {
+    updateInvoicePaymentStatus();
+    console.log('Initial invoice status check completed');
+  } catch (err) {
+    console.error('Error on initial invoice status check:', err);
+  }
+}, 5000); // 5 seconds after startup
 
 server.listen(PORT, () => console.log(`Server Port: ${PORT}`));

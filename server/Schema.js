@@ -169,6 +169,154 @@ const initDatabase = async () => {
       );
     `);
 
+    db.run(`
+      CREATE TABLE IF NOT EXISTS notifications (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          title TEXT NOT NULL,
+          message TEXT NOT NULL,
+          type TEXT DEFAULT 'info',
+          isRead INTEGER DEFAULT 0,
+          relatedId TEXT,
+          createdAt TEXT DEFAULT (datetime('now')),
+          FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+
+    // Create view for project overview
+    db.run(`
+      CREATE VIEW IF NOT EXISTS project_view AS
+      SELECT 
+          p.id,
+          p.title,
+          p.description,
+          p.budget,
+          p.status,
+          p.postedDate,
+          p.deadline,
+          p.clientId,
+          p.clientName,
+          p.clientEmail,
+          p.freelancerId,
+          p.freelancerName,
+          u.username as clientUsername,
+          u.email as clientUserEmail,
+          COUNT(DISTINCT a.id) as applicationCount,
+          (SELECT COUNT(*) FROM payments pay WHERE pay.projectId = p.id) as paymentCount,
+          (SELECT COUNT(*) FROM invoices inv WHERE inv.projectId = p.id) as invoiceCount
+      FROM projects p
+      LEFT JOIN users u ON p.clientId = u.id
+      LEFT JOIN applications a ON p.id = a.projectId
+      GROUP BY p.id;
+    `);
+
+    // Trigger to update invoice status to Overdue
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS update_invoice_payment_status
+      AFTER UPDATE ON invoices
+      FOR EACH ROW
+      WHEN NEW.dueDate < datetime('now') AND NEW.status = 'Unpaid'
+      BEGIN
+          UPDATE invoices 
+          SET status = 'Overdue' 
+          WHERE id = NEW.id;
+      END;
+    `);
+
+    // Trigger after payment insert - create notification
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS invoice_payment_after_insert
+      AFTER INSERT ON payments
+      FOR EACH ROW
+      BEGIN
+          INSERT INTO notifications (id, userId, title, message, type, relatedId)
+          VALUES (
+              lower(hex(randomblob(16))),
+              NEW.freelancerId,
+              'Payment Received',
+              'You have received a payment of ₹' || NEW.amount || ' for project.',
+              'payment',
+              NEW.id
+          );
+          
+          INSERT INTO notifications (id, userId, title, message, type, relatedId)
+          VALUES (
+              lower(hex(randomblob(16))),
+              NEW.clientId,
+              'Payment Sent',
+              'Your payment of ₹' || NEW.amount || ' has been sent successfully.',
+              'payment',
+              NEW.id
+          );
+      END;
+    `);
+
+    // Trigger after payment update - notify status change
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS invoice_payment_after_update
+      AFTER UPDATE ON payments
+      FOR EACH ROW
+      WHEN NEW.paymentStatus != OLD.paymentStatus
+      BEGIN
+          INSERT INTO notifications (id, userId, title, message, type, relatedId)
+          VALUES (
+              lower(hex(randomblob(16))),
+              NEW.freelancerId,
+              'Payment Status Updated',
+              'Payment status changed to ' || NEW.paymentStatus,
+              'payment',
+              NEW.id
+          );
+      END;
+    `);
+
+    // Trigger after payment delete - notify both parties
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS invoice_payment_after_delete
+      AFTER DELETE ON payments
+      FOR EACH ROW
+      BEGIN
+          INSERT INTO notifications (id, userId, title, message, type, relatedId)
+          VALUES (
+              lower(hex(randomblob(16))),
+              OLD.freelancerId,
+              'Payment Deleted',
+              'A payment of ₹' || OLD.amount || ' has been deleted.',
+              'payment',
+              OLD.id
+          );
+      END;
+    `);
+
+    // Trigger when freelancer is assigned to project
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS assign_freelancer
+      AFTER UPDATE ON projects
+      FOR EACH ROW
+      WHEN NEW.freelancerId IS NOT NULL AND (OLD.freelancerId IS NULL OR OLD.freelancerId != NEW.freelancerId)
+      BEGIN
+          INSERT INTO notifications (id, userId, title, message, type, relatedId)
+          VALUES (
+              lower(hex(randomblob(16))),
+              NEW.freelancerId,
+              'Project Assigned',
+              'You have been assigned to project: ' || NEW.title,
+              'project',
+              NEW.id
+          );
+          
+          INSERT INTO notifications (id, userId, title, message, type, relatedId)
+          VALUES (
+              lower(hex(randomblob(16))),
+              NEW.clientId,
+              'Freelancer Assigned',
+              'A freelancer has been assigned to your project: ' || NEW.title,
+              'project',
+              NEW.id
+          );
+      END;
+    `);
+
     saveDatabase();
     console.log('SQLite database initialized with sql.js');
   } catch (error) {
@@ -689,6 +837,109 @@ export const Invoice = {
     }
     return Invoice.findById(id);
   }
+};
+
+/* -----------------------------
+   Notification model
+   ----------------------------- */
+export const Notification = {
+  create: (data) => {
+    const id = uuidv4();
+    const stmt = db.prepare(`
+      INSERT INTO notifications (id, userId, title, message, type, isRead, relatedId)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.bind([
+      id,
+      data.userId,
+      data.title,
+      data.message,
+      data.type || 'info',
+      data.isRead || 0,
+      data.relatedId || null
+    ]);
+    stmt.step(); stmt.free(); saveDatabase();
+    return Notification.findById(id);
+  },
+  findById: (id) => {
+    const result = queryToObject('SELECT * FROM notifications WHERE id = ?', [id]);
+    if (result) result._id = result.id;
+    return result;
+  },
+  findByUserId: (userId) => {
+    const results = queryToObjects('SELECT * FROM notifications WHERE userId = ? ORDER BY createdAt DESC', [userId]);
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  markAsRead: (id) => {
+    const stmt = db.prepare('UPDATE notifications SET isRead = 1 WHERE id = ?');
+    stmt.bind([id]); stmt.step(); stmt.free(); saveDatabase();
+    return Notification.findById(id);
+  },
+  markAllAsReadForUser: (userId) => {
+    const stmt = db.prepare('UPDATE notifications SET isRead = 1 WHERE userId = ?');
+    stmt.bind([userId]); stmt.step(); stmt.free(); saveDatabase();
+  },
+  deleteById: (id) => {
+    const stmt = db.prepare('DELETE FROM notifications WHERE id = ?');
+    stmt.bind([id]); stmt.step(); stmt.free(); saveDatabase();
+  }
+};
+
+/* -----------------------------
+   Helper Functions / Procedures
+   ----------------------------- */
+
+// Procedure to update invoice payment status (check for overdue invoices)
+export const updateInvoicePaymentStatus = () => {
+  const stmt = db.prepare(`
+    UPDATE invoices 
+    SET status = 'Overdue' 
+    WHERE dueDate < datetime('now') 
+    AND status = 'Unpaid'
+  `);
+  stmt.step(); 
+  stmt.free(); 
+  saveDatabase();
+  
+  // Get newly overdue invoices to send notifications
+  const overdueInvoices = queryToObjects(`
+    SELECT * FROM invoices 
+    WHERE status = 'Overdue' 
+    AND datetime(createdAt) > datetime('now', '-1 day')
+  `);
+  
+  // Create notifications for overdue invoices
+  overdueInvoices.forEach(invoice => {
+    const notifId = uuidv4();
+    const stmt = db.prepare(`
+      INSERT INTO notifications (id, userId, title, message, type, relatedId)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    stmt.bind([
+      notifId,
+      invoice.clientId,
+      'Invoice Overdue',
+      `Invoice #${invoice.invoiceNumber} is overdue. Please make payment.`,
+      'warning',
+      invoice.id
+    ]);
+    stmt.step(); 
+    stmt.free();
+  });
+  
+  saveDatabase();
+  return overdueInvoices.length;
+};
+
+// Get project view (using the view created in database)
+export const getProjectView = () => {
+  const results = queryToObjects('SELECT * FROM project_view');
+  return results;
+};
+
+export const getProjectViewById = (projectId) => {
+  const result = queryToObject('SELECT * FROM project_view WHERE id = ?', [projectId]);
+  return result;
 };
 
 export { db };

@@ -23,6 +23,7 @@ const Navbar = () => {
             <p className="nav-link-v4" onClick={() => navigate('/myApplications')}>Applications</p>
             <p className="nav-link-v4" onClick={() => navigate('/earnings')}>Earnings</p>
             <p className="nav-link-v4" onClick={() => navigate('/create-invoice')}>Invoices</p>
+            <p className="nav-link-v4" onClick={() => navigate('/notifications')}>Notifications</p>
             <button className="btn-logout-v4" onClick={() => logout()}>Logout</button>
           </div>
         </div>
@@ -40,6 +41,7 @@ const Navbar = () => {
             <p className="nav-link-v4" onClick={() => navigate('/project-applications')}>Applications</p>
             <p className="nav-link-v4" onClick={() => navigate('/payments')}>Payments</p>
             <p className="nav-link-v4" onClick={() => navigate('/invoices')}>Invoices</p>
+            <p className="nav-link-v4" onClick={() => navigate('/notifications')}>Notifications</p>
             <button className="btn-logout-v4" onClick={() => logout()}>Logout</button>
           </div>
         </div>
