@@ -21,6 +21,8 @@ const Navbar = () => {
             <p className="nav-link-v4" onClick={() => navigate('/all-projects')}>All Projects</p>
             <p className="nav-link-v4" onClick={() => navigate('/my-projects')}>My Projects</p>
             <p className="nav-link-v4" onClick={() => navigate('/myApplications')}>Applications</p>
+            <p className="nav-link-v4" onClick={() => navigate('/earnings')}>Earnings</p>
+            <p className="nav-link-v4" onClick={() => navigate('/create-invoice')}>Invoices</p>
             <button className="btn-logout-v4" onClick={() => logout()}>Logout</button>
           </div>
         </div>
@@ -36,6 +38,8 @@ const Navbar = () => {
             <p className="nav-link-v4" onClick={() => navigate('/client')}>Dashboard</p>
             <p className="nav-link-v4" onClick={() => navigate('/new-project')}>New Project</p>
             <p className="nav-link-v4" onClick={() => navigate('/project-applications')}>Applications</p>
+            <p className="nav-link-v4" onClick={() => navigate('/payments')}>Payments</p>
+            <p className="nav-link-v4" onClick={() => navigate('/invoices')}>Invoices</p>
             <button className="btn-logout-v4" onClick={() => logout()}>Logout</button>
           </div>
         </div>

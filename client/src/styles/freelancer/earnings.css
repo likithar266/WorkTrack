@@ -1,0 +1,133 @@
+.earnings-page {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.earnings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.earnings-header h2 {
+  color: #333;
+  font-size: 28px;
+}
+
+.total-earnings-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  padding: 40px;
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.total-earnings-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 20px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.earnings-amount {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.loading, .no-payments {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+  font-size: 18px;
+}
+
+.payments-list h3 {
+  color: #333;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.payments-list .payment-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.payments-list .payment-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.payment-header h4 {
+  color: #333;
+  font-size: 16px;
+  margin: 0;
+}
+
+.payment-status {
+  padding: 5px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.detail-row .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-row .value {
+  color: #333;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .earnings-page {
+    padding: 20px;
+  }
+
+  .earnings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .total-earnings-card {
+    padding: 30px 20px;
+  }
+
+  .earnings-amount {
+    font-size: 36px;
+  }
+}

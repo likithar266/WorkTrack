@@ -17,6 +17,11 @@ import Client from './pages/client/Client'
 import ProjectApplications from './pages/client/ProjectApplications'
 import NewProject from './pages/client/NewProject'
 import ProjectWorking from './pages/client/ProjectWorking'
+import Payments from './pages/client/Payments'
+import Invoices from './pages/client/Invoices'
+
+import Earnings from './pages/freelancer/Earnings'
+import CreateInvoice from './pages/freelancer/CreateInvoice'
 
 import Admin from './pages/admin/Admin'
 import AdminProjects from './pages/admin/AdminProjects'
@@ -46,6 +51,11 @@ function App() {
         <Route path='/project-applications' element={<ProjectApplications />} />
         <Route path='/new-project' element={<NewProject />} />
         <Route path='/client-project/:id' element={<ProjectWorking />} />
+        <Route path='/payments' element={<Payments />} />
+        <Route path='/invoices' element={<Invoices />} />
+
+        <Route path='/earnings' element={<Earnings />} />
+        <Route path='/create-invoice' element={<CreateInvoice />} />
 
         <Route path='/admin' element={<Admin />} />
         <Route path='/admin-projects' element={<AdminProjects />} />

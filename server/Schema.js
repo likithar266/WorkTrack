@@ -128,6 +128,47 @@ const initDatabase = async () => {
       );
     `);
 
+    db.run(`
+      CREATE TABLE IF NOT EXISTS payments (
+          id TEXT PRIMARY KEY,
+          projectId TEXT NOT NULL,
+          clientId TEXT NOT NULL,
+          freelancerId TEXT NOT NULL,
+          amount REAL NOT NULL,
+          paymentMethod TEXT DEFAULT 'Card',
+          paymentStatus TEXT DEFAULT 'Pending',
+          transactionId TEXT,
+          paymentDate TEXT,
+          createdAt TEXT DEFAULT (datetime('now')),
+          FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+          FOREIGN KEY (clientId) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (freelancerId) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS invoices (
+          id TEXT PRIMARY KEY,
+          paymentId TEXT NOT NULL,
+          projectId TEXT NOT NULL,
+          clientId TEXT NOT NULL,
+          freelancerId TEXT NOT NULL,
+          amount REAL NOT NULL,
+          tax REAL DEFAULT 0,
+          totalAmount REAL NOT NULL,
+          invoiceNumber TEXT UNIQUE,
+          invoiceDate TEXT,
+          dueDate TEXT,
+          status TEXT DEFAULT 'Unpaid',
+          description TEXT,
+          createdAt TEXT DEFAULT (datetime('now')),
+          FOREIGN KEY (paymentId) REFERENCES payments(id) ON DELETE CASCADE,
+          FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+          FOREIGN KEY (clientId) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (freelancerId) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+
     saveDatabase();
     console.log('SQLite database initialized with sql.js');
   } catch (error) {
@@ -508,6 +549,145 @@ export const Chat = {
       Chat.updateMessages(id, messages);
     }
     return Chat.findById(id);
+  }
+};
+
+/* -----------------------------
+   Payment model
+   ----------------------------- */
+export const Payment = {
+  create: (data) => {
+    const id = uuidv4();
+    const stmt = db.prepare(`
+      INSERT INTO payments (id, projectId, clientId, freelancerId, amount, paymentMethod, paymentStatus, transactionId, paymentDate)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.bind([
+      id, 
+      data.projectId, 
+      data.clientId, 
+      data.freelancerId, 
+      data.amount, 
+      data.paymentMethod || 'Card', 
+      data.paymentStatus || 'Pending', 
+      data.transactionId || null,
+      data.paymentDate || new Date().toISOString()
+    ]);
+    stmt.step(); stmt.free(); saveDatabase();
+    return Payment.findById(id);
+  },
+  findById: (id) => {
+    const result = queryToObject('SELECT * FROM payments WHERE id = ?', [id]);
+    if (result) result._id = result.id;
+    return result;
+  },
+  findOne: (query) => {
+    if (query.id) return Payment.findById(query.id);
+    if (query.projectId) {
+      const result = queryToObject('SELECT * FROM payments WHERE projectId = ?', [query.projectId]);
+      if (result) result._id = result.id;
+      return result;
+    }
+    return null;
+  },
+  findAll: () => {
+    const results = queryToObjects('SELECT * FROM payments');
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  findByClientId: (clientId) => {
+    const results = queryToObjects('SELECT * FROM payments WHERE clientId = ?', [clientId]);
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  findByFreelancerId: (freelancerId) => {
+    const results = queryToObjects('SELECT * FROM payments WHERE freelancerId = ?', [freelancerId]);
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  update: (id, data) => {
+    const updates = [];
+    const values = [];
+    if (data.paymentStatus !== undefined) { updates.push('paymentStatus = ?'); values.push(data.paymentStatus); }
+    if (data.transactionId !== undefined) { updates.push('transactionId = ?'); values.push(data.transactionId); }
+    if (data.paymentDate !== undefined) { updates.push('paymentDate = ?'); values.push(data.paymentDate); }
+    if (updates.length > 0) {
+      values.push(id);
+      const stmt = db.prepare(`UPDATE payments SET ${updates.join(', ')} WHERE id = ?`);
+      stmt.bind(values); stmt.step(); stmt.free(); saveDatabase();
+    }
+    return Payment.findById(id);
+  }
+};
+
+/* -----------------------------
+   Invoice model
+   ----------------------------- */
+export const Invoice = {
+  create: (data) => {
+    const id = uuidv4();
+    const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const stmt = db.prepare(`
+      INSERT INTO invoices (id, paymentId, projectId, clientId, freelancerId, amount, tax, totalAmount, invoiceNumber, invoiceDate, dueDate, status, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.bind([
+      id,
+      data.paymentId,
+      data.projectId,
+      data.clientId,
+      data.freelancerId,
+      data.amount,
+      data.tax || 0,
+      data.totalAmount,
+      invoiceNumber,
+      data.invoiceDate || new Date().toISOString(),
+      data.dueDate || null,
+      data.status || 'Unpaid',
+      data.description || ''
+    ]);
+    stmt.step(); stmt.free(); saveDatabase();
+    return Invoice.findById(id);
+  },
+  findById: (id) => {
+    const result = queryToObject('SELECT * FROM invoices WHERE id = ?', [id]);
+    if (result) result._id = result.id;
+    return result;
+  },
+  findOne: (query) => {
+    if (query.id) return Invoice.findById(query.id);
+    if (query.paymentId) {
+      const result = queryToObject('SELECT * FROM invoices WHERE paymentId = ?', [query.paymentId]);
+      if (result) result._id = result.id;
+      return result;
+    }
+    if (query.invoiceNumber) {
+      const result = queryToObject('SELECT * FROM invoices WHERE invoiceNumber = ?', [query.invoiceNumber]);
+      if (result) result._id = result.id;
+      return result;
+    }
+    return null;
+  },
+  findAll: () => {
+    const results = queryToObjects('SELECT * FROM invoices');
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  findByClientId: (clientId) => {
+    const results = queryToObjects('SELECT * FROM invoices WHERE clientId = ?', [clientId]);
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  findByFreelancerId: (freelancerId) => {
+    const results = queryToObjects('SELECT * FROM invoices WHERE freelancerId = ?', [freelancerId]);
+    return results.map(r => { r._id = r.id; return r; });
+  },
+  update: (id, data) => {
+    const updates = [];
+    const values = [];
+    if (data.status !== undefined) { updates.push('status = ?'); values.push(data.status); }
+    if (data.dueDate !== undefined) { updates.push('dueDate = ?'); values.push(data.dueDate); }
+    if (updates.length > 0) {
+      values.push(id);
+      const stmt = db.prepare(`UPDATE invoices SET ${updates.join(', ')} WHERE id = ?`);
+      stmt.bind(values); stmt.step(); stmt.free(); saveDatabase();
+    }
+    return Invoice.findById(id);
   }
 };
 

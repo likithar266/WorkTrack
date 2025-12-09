@@ -3,7 +3,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
-import { Application, Chat, Freelancer, Project, User } from './Schema.js';
+import { Application, Chat, Freelancer, Project, User, Payment, Invoice } from './Schema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import SocketHandler from './SocketHandler.js';
@@ -427,6 +427,180 @@ app.get('/fetch-chats/:id', (req, res) => {
     res.status(200).json(chatsResponse);
   } catch (err) {
     console.error('Fetch chats error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== PAYMENT ENDPOINTS =====
+
+// Create payment
+app.post('/create-payment', (req, res) => {
+  try {
+    const { projectId, clientId, freelancerId, amount, paymentMethod } = req.body;
+    if (!projectId || !clientId || !freelancerId || !amount) {
+      return res.status(400).json({ error: "Required fields missing" });
+    }
+    
+    const payment = Payment.create({
+      projectId,
+      clientId,
+      freelancerId,
+      amount,
+      paymentMethod: paymentMethod || 'Card',
+      paymentStatus: 'Pending',
+      transactionId: `TXN-${Date.now()}`,
+      paymentDate: new Date().toISOString()
+    });
+    
+    res.status(200).json(payment);
+  } catch (err) {
+    console.error('Create payment error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch all payments
+app.get('/fetch-payments', (req, res) => {
+  try {
+    const payments = Payment.findAll();
+    res.status(200).json(payments);
+  } catch (err) {
+    console.error('Fetch payments error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch payment by ID
+app.get('/fetch-payment/:id', (req, res) => {
+  try {
+    const payment = Payment.findById(req.params.id);
+    if (!payment) return res.status(404).json({ error: "Payment not found" });
+    res.status(200).json(payment);
+  } catch (err) {
+    console.error('Fetch payment error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch payments by client ID
+app.get('/fetch-payments/client/:clientId', (req, res) => {
+  try {
+    const payments = Payment.findByClientId(req.params.clientId);
+    res.status(200).json(payments);
+  } catch (err) {
+    console.error('Fetch client payments error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch payments by freelancer ID
+app.get('/fetch-payments/freelancer/:freelancerId', (req, res) => {
+  try {
+    const payments = Payment.findByFreelancerId(req.params.freelancerId);
+    res.status(200).json(payments);
+  } catch (err) {
+    console.error('Fetch freelancer payments error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update payment status
+app.post('/update-payment/:id', (req, res) => {
+  try {
+    const { paymentStatus, transactionId } = req.body;
+    const payment = Payment.update(req.params.id, { paymentStatus, transactionId });
+    res.status(200).json(payment);
+  } catch (err) {
+    console.error('Update payment error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== INVOICE ENDPOINTS =====
+
+// Create invoice
+app.post('/create-invoice', (req, res) => {
+  try {
+    const { paymentId, projectId, clientId, freelancerId, amount, tax, description } = req.body;
+    if (!paymentId || !projectId || !clientId || !freelancerId || !amount) {
+      return res.status(400).json({ error: "Required fields missing" });
+    }
+    
+    const totalAmount = parseFloat(amount) + (parseFloat(tax) || 0);
+    
+    const invoice = Invoice.create({
+      paymentId,
+      projectId,
+      clientId,
+      freelancerId,
+      amount: parseFloat(amount),
+      tax: parseFloat(tax) || 0,
+      totalAmount,
+      invoiceDate: new Date().toISOString(),
+      status: 'Unpaid',
+      description: description || ''
+    });
+    
+    res.status(200).json(invoice);
+  } catch (err) {
+    console.error('Create invoice error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch all invoices
+app.get('/fetch-invoices', (req, res) => {
+  try {
+    const invoices = Invoice.findAll();
+    res.status(200).json(invoices);
+  } catch (err) {
+    console.error('Fetch invoices error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch invoice by ID
+app.get('/fetch-invoice/:id', (req, res) => {
+  try {
+    const invoice = Invoice.findById(req.params.id);
+    if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    res.status(200).json(invoice);
+  } catch (err) {
+    console.error('Fetch invoice error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch invoices by client ID
+app.get('/fetch-invoices/client/:clientId', (req, res) => {
+  try {
+    const invoices = Invoice.findByClientId(req.params.clientId);
+    res.status(200).json(invoices);
+  } catch (err) {
+    console.error('Fetch client invoices error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch invoices by freelancer ID
+app.get('/fetch-invoices/freelancer/:freelancerId', (req, res) => {
+  try {
+    const invoices = Invoice.findByFreelancerId(req.params.freelancerId);
+    res.status(200).json(invoices);
+  } catch (err) {
+    console.error('Fetch freelancer invoices error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update invoice status
+app.post('/update-invoice/:id', (req, res) => {
+  try {
+    const { status } = req.body;
+    const invoice = Invoice.update(req.params.id, { status });
+    res.status(200).json(invoice);
+  } catch (err) {
+    console.error('Update invoice error:', err);
     res.status(500).json({ error: err.message });
   }
 });

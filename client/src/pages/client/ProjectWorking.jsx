@@ -75,6 +75,43 @@ const ProjectWorking = () => {
     })
   }
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Card');
+
+  const handleMakePayment = async() => {
+    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
+      alert('Please enter a valid payment amount');
+      return;
+    }
+
+    try {
+      const paymentRes = await API.post('/create-payment', {
+        projectId: params['id'],
+        clientId: localStorage.getItem('userId'),
+        freelancerId: project.freelancerId,
+        amount: parseFloat(paymentAmount),
+        paymentMethod: paymentMethod,
+      });
+
+      if (paymentRes.data) {
+        // Update payment status to Completed
+        await API.post(`/update-payment/${paymentRes.data._id}`, {
+          paymentStatus: 'Completed',
+          transactionId: paymentRes.data.transactionId
+        });
+        
+        alert('Payment made successfully!');
+        setShowPaymentModal(false);
+        setPaymentAmount('');
+        fetchProject(params['id']);
+      }
+    } catch (err) {
+      console.error('Error making payment:', err);
+      alert('Failed to make payment');
+    }
+  }
+
   const handleRejectSubmission = async() =>{
     await API.get(`/reject-submission/${params['id']}`).then(
       (response)=>{
@@ -177,7 +214,10 @@ const ProjectWorking = () => {
                                 <p>{project.submissionDescription}</p>
                             
                               {project.submissionAccepted ?
-                                <h5 style={{color: "green"}} >project completed!!</h5>
+                                <>
+                                  <h5 style={{color: "green"}} >project completed!!</h5>
+                                  <button className='btn btn-primary' style={{marginTop: '15px'}} onClick={() => setShowPaymentModal(true)}>Make Payment</button>
+                                </>
                               :
                               
                                 <div className="submission-btns">
@@ -248,6 +288,43 @@ const ProjectWorking = () => {
 
       </div>
     :""}
+
+    {showPaymentModal && (
+      <div className="payment-modal-overlay" onClick={() => setShowPaymentModal(false)}>
+        <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
+          <h3>Make Payment</h3>
+          <div className="form-group" style={{marginBottom: '15px'}}>
+            <label>Amount (₹)</label>
+            <input
+              type="number"
+              className="form-control"
+              value={paymentAmount}
+              onChange={(e) => setPaymentAmount(e.target.value)}
+              placeholder="Enter amount"
+              style={{marginTop: '5px'}}
+            />
+          </div>
+          <div className="form-group" style={{marginBottom: '20px'}}>
+            <label>Payment Method</label>
+            <select
+              className="form-control"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              style={{marginTop: '5px'}}
+            >
+              <option value="Card">Card</option>
+              <option value="UPI">UPI</option>
+              <option value="Net Banking">Net Banking</option>
+              <option value="Wallet">Wallet</option>
+            </select>
+          </div>
+          <div className="modal-actions" style={{display: 'flex', gap: '10px'}}>
+            <button className="btn btn-success" onClick={handleMakePayment}>Pay Now</button>
+            <button className="btn btn-secondary" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   )
 }
