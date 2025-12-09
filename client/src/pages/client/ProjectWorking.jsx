@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import '../../styles/client/ProjectWorking.css'
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import API from '../../api';
 import { GeneralContext } from '../../context/GeneralContext';
 
 const ProjectWorking = () => {
@@ -38,7 +38,7 @@ const ProjectWorking = () => {
     
     try {
       console.log('Fetching project with ID:', id);
-      const response = await axios.get(`http://localhost:6001/fetch-project/${id}`);
+      const response = await API.get(`/fetch-project/${id}`);
       console.log('Project response:', response.data);
       
       if(response.data) {
@@ -65,7 +65,7 @@ const ProjectWorking = () => {
 
 
   const handleApproveSubmission = async() =>{
-    await axios.get(`http://localhost:6001/approve-submission/${params['id']}`).then(
+    await API.get(`/approve-submission/${params['id']}`).then(
       (response)=>{
         fetchProject(params['id']);
         alert("Submission approved!!");
@@ -76,7 +76,7 @@ const ProjectWorking = () => {
   }
 
   const handleRejectSubmission = async() =>{
-    await axios.get(`http://localhost:6001/reject-submission/${params['id']}`).then(
+    await API.get(`/reject-submission/${params['id']}`).then(
       (response)=>{
         fetchProject(params['id']);
         alert("Submission rejected!!");
@@ -105,7 +105,7 @@ const ProjectWorking = () => {
   const [chats, setChats] = useState(null);
   const fetchChats = async() =>{
     try {
-      const response = await axios.get(`http://localhost:6001/fetch-chats/${params['id']}`);
+      const response = await API.get(`/fetch-chats/${params['id']}`);
       if(response.data) {
         setChats(response.data);
       }

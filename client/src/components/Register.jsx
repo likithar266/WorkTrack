@@ -16,14 +16,14 @@ const Register = ({ setAuthType }) => {
       alert("Please agree to the terms and conditions.");
       return;
     }
-    await register();
+    await register({ username, email, password, usertype });
   };
   // --- END OF YOUR LOGIC (with a small guard clause) ---
 
   return (
     <form className="auth-form-v4">
       <h2 className="auth-title-v4">Create an account</h2>
-      <p className="auth-subtitle-v4">Join Hire_Work and start your journey.</p>
+      <p className="auth-subtitle-v4">Join _Work and start your journey.</p>
 
       {/* Social Buttons (UI Only - for consistency) */}
       <button type="button" className="btn-social-v4 btn-google-v4">
@@ -127,7 +127,7 @@ const Register = ({ setAuthType }) => {
           />
           <span>
             Yes, I understand and agree to the 
-            <a href="/terms-of-service" target="_blank"> Hire_Work Terms of Service</a>, 
+            <a href="/terms-of-service" target="_blank"> _Work Terms of Service</a>, 
             including the 
             <a href="/privacy-policy" target="_blank"> Privacy Policy</a>.
           </span>

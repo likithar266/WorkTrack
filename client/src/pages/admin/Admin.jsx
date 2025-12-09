@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios';
+import API from '../../api';
 
 const Admin = () => {
 
@@ -19,7 +19,7 @@ const Admin = () => {
   },[])
 
   const fetchProjects = async() =>{
-      await axios.get("http://localhost:6001/fetch-projects").then(
+      await API.get("/fetch-projects").then(
         (response)=>{
             setProjectsCount(response.data.length);
             const comPros = response.data.filter((pro)=> pro.status === "Completed");
@@ -31,7 +31,7 @@ const Admin = () => {
   }
 
   const fetchApplications = async() =>{
-    await axios.get("http://localhost:6001/fetch-applications").then(
+    await API.get("/fetch-applications").then(
       (response)=>{
           setApplicationsCount(response.data.length);
       }
@@ -41,7 +41,7 @@ const Admin = () => {
 }
 
 const fetchUsers = async() =>{
-  await axios.get("http://localhost:6001/fetch-users").then(
+  await API.get("/fetch-users").then(
     (response)=>{
         setUsersCount(response.data.length);
     }

@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useState } from 'react';
 import API from '../api';
 import { useNavigate } from "react-router-dom";
 import socketIoClient from 'socket.io-client';
@@ -21,11 +21,15 @@ const GeneralContextProvider = ({children}) => {
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
-  const login = async (loginInputs) => {
+  const login = async () => {
     try {
-      const res = await API.post('/login', loginInputs);
+      const res = await API.post('/login', { email, password });
       if (res.data) {
         localStorage.setItem('user', JSON.stringify(res.data));
+        localStorage.setItem('userId', res.data._id);
+        localStorage.setItem('username', res.data.username);
+        localStorage.setItem('email', res.data.email);
+        localStorage.setItem('usertype', res.data.usertype);
         setErr(false);
 
         if (res.data.usertype === 'freelancer') {
@@ -52,6 +56,10 @@ const GeneralContextProvider = ({children}) => {
       const res = await API.post('/register', inputs);
       if (res.data) {
         localStorage.setItem('user', JSON.stringify(res.data));
+        localStorage.setItem('userId', res.data._id);
+        localStorage.setItem('username', res.data.username);
+        localStorage.setItem('email', res.data.email);
+        localStorage.setItem('usertype', res.data.usertype);
         setErr(false);
 
         if (res.data.usertype === 'freelancer') {

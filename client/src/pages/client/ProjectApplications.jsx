@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../../styles/client/ClientApplications.css';
-import axios from 'axios';
+import API from '../../api';
 
 const ProjectApplications = () => {
   const [applications, setApplications] = useState([]);
@@ -13,7 +13,7 @@ const ProjectApplications = () => {
 
   const fetchApplications = async () => {
     try {
-      const response = await axios.get("http://localhost:6001/fetch-applications");
+      const response = await API.get("/fetch-applications");
       // ensure we always have _id available
       const apps = (response.data || []).map(a => ({ ...a, _id: a._id || a.id }));
       const myApps = apps.filter(application => application.clientId === localStorage.getItem('userId'));
@@ -34,7 +34,7 @@ const ProjectApplications = () => {
       return;
     }
     try {
-      await axios.get(`http://localhost:6001/approve-application/${realId}`);
+      await API.get(`/approve-application/${realId}`);
       alert("Application approved");
       fetchApplications();
     } catch (err) {
@@ -50,7 +50,7 @@ const ProjectApplications = () => {
       return;
     }
     try {
-      await axios.get(`http://localhost:6001/reject-application/${realId}`);
+      await API.get(`/reject-application/${realId}`);
       alert("Application rejected!!");
       fetchApplications();
     } catch (err) {

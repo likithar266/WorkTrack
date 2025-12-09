@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import '../../styles/admin/allApplications.css'
-import axios from 'axios'
+import API from '../../api'
 
 {/* <h5><b>Freelancer Id: </b> {application.budget}</h5> */}
 
@@ -13,7 +13,7 @@ const AllApplications = () => {
   },[])
 
   const fetchApplications = async() =>{
-    await axios.get("http://localhost:6001/fetch-applications").then(
+    await API.get("/fetch-applications").then(
       (response)=>{
         setApplications(response.data.reverse());
         console.log(response.data);

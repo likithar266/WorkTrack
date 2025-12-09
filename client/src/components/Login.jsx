@@ -15,7 +15,7 @@ const Login = ({ setAuthType }) => {
   return (
     <form className="auth-form-v4">
       <h2 className="auth-title-v4">Welcome back</h2>
-      <p className="auth-subtitle-v4">Login to your Hire_Work account.</p>
+      <p className="auth-subtitle-v4">Login to your WorkTrack account.</p>
 
       {/* Social Buttons (UI Only) */}
       <button type="button" className="btn-social-v4 btn-google-v4">

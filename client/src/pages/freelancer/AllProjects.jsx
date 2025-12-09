@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import API from '../../api'
 import {useNavigate} from 'react-router-dom'
 import '../../styles/freelancer/AllProjects.css' 
 
@@ -18,7 +18,7 @@ const AllProjects = () => {
   },[])
 
   const fetchProjects = async()=>{
-    await axios.get('http://localhost:6001/fetch-projects').then(
+    await API.get('/fetch-projects').then(
       (response)=>{
           setProjects(response.data);
           setDisplayProjects(response.data.reverse());
